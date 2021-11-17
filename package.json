@@ -1,0 +1,17 @@
+{
+  "name": "dungeon-maze-puzzle",
+  "version": "1.0.0",
+  "description": "This is a simple maze or dungeon escape game, with its functionality made entirely in CSS.",
+  "repository": "https://github.com/takaneichinose/dungeon-maze-puzzle.git",
+  "author": "Takane Ichinose <ichinose.takane@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel ./src/index.pug",
+    "build": "parcel build ./src/index.pug"
+  },
+  "devDependencies": {
+    "@parcel/transformer-pug": "^2.0.1",
+    "@parcel/transformer-sass": "^2.0.1",
+    "parcel": "^2.0.1"
+  }
+}

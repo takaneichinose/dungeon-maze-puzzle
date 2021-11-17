@@ -1,0 +1,96 @@
+- const FINISH_ID = "show_post_dialog";
+form.game-form
+	//- Checkboxes for the grid tiles
+	- for (let y = 0; y < map.length; y++)
+		- for (let x = 0; x < map[0].length; x++)
+			- const position = `${x}_${y}`;
+			- const object = map[y][x];
+			- const block = object.split("_");
+			input.map-check(
+				type="radio",
+				name="map-radio",
+				id=`grid_${position}`,
+				checked=object === "S"
+			)
+			- if (block[0] === "K") {
+				input.map-check(type="checkbox" id=`key_${position}`)
+			- }
+			- else if (block[0] === "L") {
+				input.map-check(type="checkbox" id=`lock_${position}`)
+			- }
+			- else if (block[0] === "M") {
+				input.map-check(type="checkbox" id=`monster_${position}`).monster-check
+			- }
+	//- Pre-game dialog box
+	- for (let i in preDialog)
+		input(
+			type="radio"
+			name="pre_dialog"
+			id=`pre_dialog_${i}`
+			checked=i == 0).map-check
+	input(
+		type="radio"
+		name="pre_dialog"
+		id=`pre_dialog_${preDialog.length}`).map-check
+	//- Post-game dialog box
+	- for (let i in postDialog)
+		input(
+			type="radio"
+			name="post_dialog"
+			id=`post_dialog_${i}`
+			checked=i == 0).map-check
+	//- End game dialog box
+	input(type="checkbox" id=FINISH_ID).map-check
+	.view
+		.map
+			- for (let y = 0; y < map.length; y++)
+				- for (let x = 0; x < map[0].length; x++)
+					- const position = `${x}_${y}`;
+					- const block = map[y][x].split("_");
+					- let className = "grid";
+					- let target = `grid_${position}`;
+					- if (block[0] === "W") {
+					- 	className += " wall";
+					- }
+					- else if (block[0] === "T") {
+					- 	className += " tree";
+					- }
+					- else if (block[0] === "F") {
+					- 	className += " finish";
+					- 	target = FINISH_ID;
+					- }
+					- else if (block[0] === "B") {
+					- 	className += " barrel";
+					- }
+					label(class=className, for=target)
+						- if (block[0] === "K") {
+							label.object.key(for=`key_${position}`)
+						- }
+						- else if (block[0] === "L") {
+							- const lockPosition = block[1].split("-").join("_");
+							label.object.lock(for=`lock_${position}`)
+							label.object.lock(data-key=`${lockPosition}`)
+						- }
+						- else if (block[0] === "M") {
+							label.object.monster(for=`monster_${position}`)
+						- }
+		.character
+		.fog
+		//- Pre-game dialog box
+		- for (let i = preDialog.length - 1; i >= 0; i--)
+			- const dialog = preDialog[i];
+			label(
+				id=`pre_dialog_trigger_${i}`
+				for=`pre_dialog_${i + 1}`).pre-dialog #{dialog}
+		//- Post-game dialog boz
+		- for (let i = postDialog.length - 1; i >= 0; i--)
+			- const dialog = postDialog[i];
+			label(
+				id=`post_dialog_trigger_${i}`
+				for=`post_dialog_${i + 1}`).post-dialog #{dialog}
+				- if (i === postDialog.length - 1)
+					button(type="reset").reset Play again
+		//- Game lost dialog box
+		.lose-dialog
+			span #{loseDialog}
+			button(type="reset").reset Play again

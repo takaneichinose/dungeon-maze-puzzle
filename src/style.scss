@@ -1,0 +1,331 @@
+@use "sass:math";
+
+////////////////////////////////////////////////////////////////////////////////
+// If there is a change on the HTML side, the variables below should be changed
+////////////////////////////////////////////////////////////////////////////////
+
+$assets-directory: "../assets/";
+
+$repeat-x: 10;
+$repeat-y: 10;
+
+$visible-count-x: 3;
+$visible-count-y: 3;
+
+$pre-dialog-count: 3;
+$post-dialog-count: 2;
+
+////////////////////////////////////////////////////////////////////////////////
+// Variables to style the game
+////////////////////////////////////////////////////////////////////////////////
+
+@import url("https://fonts.googleapis.com/css?family=Inconsolata:400,400i,700");
+
+$grid-size: 48px;
+
+$fog-color: #000000;
+
+$dialog-font-family: Inconsolata, sans-serif;
+$dialog-font-size: 16px;
+$dialog-padding: 8px;
+
+$button-width: 144px;
+$button-height: 48px;
+
+////////////////////////////////////////////////////////////////////////////////
+// Debugging
+////////////////////////////////////////////////////////////////////////////////
+
+$debug: false;
+
+////////////////////////////////////////////////////////////////////////////////
+// Style goes here
+////////////////////////////////////////////////////////////////////////////////
+
+* {
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+.game-form {
+	background-color: $fog-color;
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.view {
+	background-color: $fog-color;
+	width: $grid-size * $visible-count-x;
+	height: $grid-size * $visible-count-y;
+	margin: auto;
+	flex-shrink: 0;
+	overflow: hidden;
+	position: relative;
+}
+
+.map {
+	--repeat-x: 0;
+	--repeat-y: 0;
+	display: grid;
+	grid-template-columns: repeat($repeat-x, $grid-size);
+	grid-template-rows: repeat($repeat-y, $grid-size);
+	position: absolute;
+	top: $grid-size * math.floor(math.div($visible-count-x, 2));
+	left: $grid-size * math.floor(math.div($visible-count-y, 2));
+	transition: transform 1024ms ease-out;
+}
+
+.grid {
+	background-image: url("#{$assets-directory}/css-maze-floor.png");
+	background-size: $grid-size $grid-size;
+	display: block;
+	position: relative;
+	pointer-events: none;
+	&.wall {
+		background-image: url("#{$assets-directory}/css-maze-wall.png");
+	}
+	&.tree {
+		background-image: url("#{$assets-directory}/css-maze-tree.png");
+	}
+	&.finish {
+		background-image: url("#{$assets-directory}/css-maze-exit.png");
+		pointer-events: auto;
+	}
+	&.barrel {
+		background-image: url("#{$assets-directory}/css-maze-barrel.png");
+	}
+	.object {
+		background-size: $grid-size $grid-size;
+		width: 100%;
+		height: 100%;
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		transition: opacity 128ms ease-out;
+		&.key {
+			background-image: url("#{$assets-directory}/css-maze-key.png");
+			pointer-events: auto;
+		}
+		&.lock {
+			background-image: url("#{$assets-directory}/css-maze-door.png");
+		}
+		&.monster {
+			background-image: url("#{$assets-directory}/css-maze-monster.png");
+		}
+	}
+}
+
+.map-check {
+	@if $debug == false {
+		display: none;
+	}
+}
+
+@for $x from 0 to $repeat-x {
+	@for $y from 0 to $repeat-y {
+		$position: #{$x}_#{$y};
+		#grid_#{$position}:checked ~ .view .map {
+			transform:
+				translateX($x * $grid-size * -1)
+				translateY($y * $grid-size * -1);
+			.grid[for="grid_#{$x + 1}_#{$y}"],
+			.grid[for="grid_#{$x - 1}_#{$y}"],
+			.grid[for="grid_#{$x}_#{$y + 1}"],
+			.grid[for="grid_#{$x}_#{$y - 1}"] {
+				pointer-events: auto;
+			}
+			.grid {
+				&.wall,
+				&.tree,
+				&.barrel {
+					pointer-events: none;
+				}
+			}
+		}
+		#key_#{$position}:checked ~ .view .map .grid {
+			[for="key_#{$position}"] {
+				opacity: 0;
+				pointer-events: none;
+			}
+			[data-key="#{$position}"] {
+				display: none;
+			}
+		}
+		#lock_#{$position}:checked ~ .view .map .grid [for="lock_#{$position}"] {
+			opacity: 0;
+			pointer-events: none;
+		}
+		#grid_#{$position}:checked ~ .view .character {
+			animation: animate-character_#{$position} 1024ms step-end;
+		}
+		@keyframes animate-character_#{$position} {
+			0% {
+				background-position: ($grid-size * -1) 0;
+			}
+			25% {
+				background-position: ($grid-size * -2) 0;
+			}
+			50% {
+				background-position: ($grid-size * -1) 0;
+			}
+			75% {
+				background-position: ($grid-size * -2) 0;
+			}
+		}
+	}
+}
+
+.character {
+	background-image: url("#{$assets-directory}/css-maze-character.png");
+	background-size: ($grid-size * 3) $grid-size;
+	background-position: 0 0;
+	width: $grid-size;
+	height: $grid-size;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+}
+
+.fog {
+	$visible-size: $grid-size * math.floor(math.div($visible-count-x, 2));
+	background-image:
+		radial-gradient(
+			circle at center,
+			transparent 0 ($visible-size - math.div($grid-size, 2)),
+			$fog-color ($visible-size + math.div($grid-size, 2))
+		);
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+}
+
+.pre-dialog, .post-dialog, .lose-dialog {
+	font-family: $dialog-font-family;
+	font-size: $dialog-font-size;
+	text-align: center;
+	width: 100%;
+	height: 100%;
+	padding: $dialog-padding;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	opacity: 0;
+	pointer-events: none;
+	user-select: none;
+	transition: opacity 512ms ease-out;
+	transform: scale(0);
+	&::after {
+		content: "▼";
+		position: absolute;
+		bottom: 8px;
+		right: 8px;
+		animation: blink 1024ms ease-out infinite;
+	}
+}
+
+@keyframes blink {
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+.pre-dialog, .lose-dialog {
+	color: #ffffff;
+	background-color: #000000;
+}
+
+@for $i from 0 to $pre-dialog-count {
+	#pre_dialog_#{$i}:checked ~ .view [id="pre_dialog_trigger_#{$i}"] {
+		opacity: 1;
+		pointer-events: auto;
+		transform: scale(1);
+	}
+}
+
+.post-dialog {
+	background-color: #ffffff;
+	color: #000000;
+}
+
+@for $i from 0 to $post-dialog-count {
+	#post_dialog_#{$i}:checked ~ #show_post_dialog:checked ~ .view {
+		[id="post_dialog_trigger_#{$i}"] {
+			opacity: 1;
+			pointer-events: auto;
+			transform: scale(1);
+		}
+	}
+}
+
+.lose-dialog {
+	flex-direction: column;
+	justify-content: space-evenly;
+	transition: opacity 512ms ease-out 1024ms;
+}
+
+.reset {
+	color: #000000;
+	font-family: inherit;
+	font-size: 1.3rem;
+	font-weight: bold;
+	background-color: transparent;
+	background-image: url("#{$assets-directory}/css-maze-reset.png");
+	background-size: $button-width $button-height;
+	width: $button-width;
+	height: $button-height;
+	border: 0;
+	outline: 0;
+}
+
+.monster-check:checked ~ .view .map .grid {
+	pointer-events: none !important;
+}
+
+.monster-check:checked ~ .view .lose-dialog {
+	opacity: 1;
+	pointer-events: auto;
+	transform: scale(1);
+}
+
+.monster-check:checked ~ .view .character {
+// .character {
+	background-image: url("#{$assets-directory}/css-maze-character-faint.png");
+	background-size: ($grid-size * 3) $grid-size;
+	background-position: ($grid-size * -2) 0;
+	animation: character-faint 512ms step-end !important;
+}
+
+@keyframes character-faint {
+	0% {
+		background-image: url("#{$assets-directory}/css-maze-character.png");
+		background-position: 0 0;
+	}
+	33.3333% {
+		background-image: url("#{$assets-directory}/css-maze-character-faint.png");
+		background-position: 0 0;
+	}
+	66.66667% {
+		background-position: ($grid-size * -1) 0;
+	}
+	100% {
+		background-position: ($grid-size * -2) 0;
+	}
+}

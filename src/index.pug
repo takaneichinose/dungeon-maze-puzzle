@@ -1,0 +1,25 @@
+doctype html
+html(lang="en")
+	head
+		meta(http-equiv="Content-Type", content="text/html;charset=UTF-8")
+		meta(http-equiv="X-UA-Compatible", content="ie=edge")
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		link(rel="stylesheet", href="./style.scss")
+		link(rel="preload" as="image" href="../assets/css-maze-floor.png")
+		link(rel="preload" as="image" href="../assets/css-maze-wall.png")
+		link(rel="preload" as="image" href="../assets/css-maze-tree.png")
+		link(rel="preload" as="image" href="../assets/css-maze-exit.png")
+		link(rel="preload" as="image" href="../assets/css-maze-barrel.png")
+		link(rel="preload" as="image" href="../assets/css-maze-key.png")
+		link(rel="preload" as="image" href="../assets/css-maze-door.png")
+		link(rel="preload" as="image" href="../assets/css-maze-monster.png")
+		link(rel="preload" as="image" href="../assets/css-maze-character.png")
+		link(rel="preload" as="image" href="../assets/css-maze-reset.png")
+		link(rel="preload" as="image" href="../assets/css-maze-character-faint.png")
+		link(rel="preload" as="image" href="../assets/css-maze-character.png")
+		link(rel="preload" as="image" href="../assets/css-maze-character-faint.png")
+		title CSS Only Retro Dungeon Maze Puzzle
+	body
+		include ./map.pug
+		include ./definition.pug
+		include ./game.pug
